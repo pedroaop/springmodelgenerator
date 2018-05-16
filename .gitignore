@@ -1,0 +1,8 @@
+*.local
+*.identcache
+*.res
+*.stat
+*.dcu
+*.map
+*.exe
+*.drc

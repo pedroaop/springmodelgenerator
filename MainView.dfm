@@ -2,8 +2,8 @@ object ViewMain: TViewMain
   Left = 0
   Top = 0
   Caption = 'Spring4D Entity Code Generator'
-  ClientHeight = 605
-  ClientWidth = 949
+  ClientHeight = 426
+  ClientWidth = 692
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,6 +11,7 @@ object ViewMain: TViewMain
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesktopCenter
   ScreenSnap = True
   ShowHint = True
   OnCreate = FormCreate
@@ -18,81 +19,41 @@ object ViewMain: TViewMain
   PixelsPerInch = 96
   TextHeight = 13
   object spl1: TSplitter
-    Left = 305
-    Top = 0
-    Height = 586
-  end
-  object pLeft: TPanel
     Left = 0
     Top = 0
-    Width = 305
-    Height = 586
-    Align = alLeft
-    BevelOuter = bvNone
-    ShowCaption = False
-    TabOrder = 0
-    object vtTables: TVirtualStringTree
-      Left = 0
-      Top = 0
-      Width = 305
-      Height = 565
-      Align = alClient
-      BorderStyle = bsNone
-      DrawSelectionMode = smBlendedRectangle
-      Header.AutoSizeIndex = 0
-      Header.DefaultHeight = 17
-      Header.Height = 17
-      Header.MainColumn = -1
-      PopupMenu = pmTree
-      TabOrder = 0
-      TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
-      TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection, toUseExplorerTheme, toHideTreeLinesIfThemed]
-      OnDblClick = vtTablesDblClick
-      OnGetText = vtTablesGetText
-      OnInitNode = vtTablesInitNode
-      Columns = <>
-      WideDefaultText = ''
-    end
-    object edVstSearch: TButtonedEdit
-      Left = 0
-      Top = 565
-      Width = 305
-      Height = 21
-      Align = alBottom
-      Images = ilMain
-      RightButton.ImageIndex = 6
-      RightButton.Visible = True
-      TabOrder = 1
-      TextHint = 'Filter...'
-      OnChange = edVstSearchChange
-      OnRightButtonClick = edVstSearchRightButtonClick
-    end
+    Height = 407
+    ExplicitLeft = 305
+    ExplicitHeight = 586
   end
   object pRight: TPanel
-    Left = 308
+    Left = 3
     Top = 0
-    Width = 641
-    Height = 586
+    Width = 689
+    Height = 407
     Align = alClient
     BevelOuter = bvNone
     ShowCaption = False
-    TabOrder = 1
+    TabOrder = 0
+    ExplicitLeft = 308
+    ExplicitWidth = 641
+    ExplicitHeight = 586
     object pProperties: TPanel
       Left = 0
       Top = 0
-      Width = 641
+      Width = 689
       Height = 145
       Align = alTop
       BevelOuter = bvNone
       ShowCaption = False
       TabOrder = 0
+      ExplicitWidth = 641
       DesignSize = (
-        641
+        689
         145)
       object edConString: TButtonedEdit
         Left = 6
         Top = 6
-        Width = 624
+        Width = 672
         Height = 21
         Hint = 'Enter Connection String here...'
         Anchors = [akLeft, akTop, akRight]
@@ -105,6 +66,7 @@ object ViewMain: TViewMain
         TabOrder = 0
         TextHint = 'Enter Connection String here...'
         OnRightButtonClick = edConStringRightButtonClick
+        ExplicitWidth = 624
       end
       object edDbName: TEdit
         Left = 6
@@ -118,21 +80,23 @@ object ViewMain: TViewMain
       object edSchemaName: TEdit
         Left = 231
         Top = 33
-        Width = 399
+        Width = 447
         Height = 21
         Hint = 'Default Schema Name'
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 2
         TextHint = 'Default Schema Name'
+        ExplicitWidth = 399
       end
       object btnExec: TButton
-        Left = 524
+        Left = 572
         Top = 116
         Width = 106
         Height = 23
         Action = aGenerateUnits
         Anchors = [akRight, akBottom]
         TabOrder = 3
+        ExplicitLeft = 524
       end
       object btnConnect: TButton
         Left = 6
@@ -146,7 +110,7 @@ object ViewMain: TViewMain
       object edOutputDir: TButtonedEdit
         Left = 6
         Top = 60
-        Width = 624
+        Width = 672
         Height = 21
         Hint = 'Output Directory, e.g. D:\Models'
         Anchors = [akLeft, akTop, akRight]
@@ -163,6 +127,7 @@ object ViewMain: TViewMain
         TextHint = 'Output Directory, e.g. D:\Models'
         OnLeftButtonClick = edOutputDirLeftButtonClick
         OnRightButtonClick = edOutputDirRightButtonClick
+        ExplicitWidth = 624
       end
       object edUnitPrefix: TEdit
         Left = 6
@@ -178,43 +143,72 @@ object ViewMain: TViewMain
       object cbUseNullableTypes: TCheckBox
         Left = 231
         Top = 118
-        Width = 161
-        Height = 17
+        Width = 106
+        Height = 21
         Caption = 'Use Nullable Type'
         TabOrder = 7
       end
     end
-    object SynMemo1: TMemo
+    object vtTables: TVirtualStringTree
       Left = 0
       Top = 145
-      Width = 641
-      Height = 441
+      Width = 689
+      Height = 241
       Align = alClient
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Courier New'
-      Font.Style = []
-      Lines.Strings = (
-        '')
-      ParentFont = False
+      BorderStyle = bsNone
+      DrawSelectionMode = smBlendedRectangle
+      Header.AutoSizeIndex = 0
+      Header.DefaultHeight = 17
+      Header.Height = 17
+      Header.MainColumn = -1
+      PopupMenu = pmTree
       TabOrder = 1
+      TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
+      TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection, toUseExplorerTheme, toHideTreeLinesIfThemed]
+      OnDblClick = vtTablesDblClick
+      OnGetText = vtTablesGetText
+      OnInitNode = vtTablesInitNode
+      ExplicitLeft = 32
+      ExplicitTop = 87
+      ExplicitWidth = 305
+      ExplicitHeight = 448
+      Columns = <>
+      WideDefaultText = ''
+    end
+    object edVstSearch: TButtonedEdit
+      Left = 0
+      Top = 386
+      Width = 689
+      Height = 21
+      Align = alBottom
+      Images = ilMain
+      RightButton.ImageIndex = 6
+      RightButton.Visible = True
+      TabOrder = 2
+      TextHint = 'Filter...'
+      OnChange = edVstSearchChange
+      OnRightButtonClick = edVstSearchRightButtonClick
+      ExplicitLeft = 152
+      ExplicitTop = 442
+      ExplicitWidth = 305
     end
   end
   object sbBot: TStatusBar
     Left = 0
-    Top = 586
-    Width = 949
+    Top = 407
+    Width = 692
     Height = 19
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 578
+    ExplicitWidth = 949
   end
   object ilMain: TImageList
     ColorDepth = cd32Bit
     Left = 464
     Top = 264
     Bitmap = {
-      494C010107000900300010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010107000900340010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -489,9 +483,6 @@ object ViewMain: TViewMain
     Images = ilMain
     Left = 184
     Top = 312
-    object ShowPreview1: TMenuItem
-      Action = aShowPreview
-    end
     object CheckAll1: TMenuItem
       Action = aCheckAll
     end

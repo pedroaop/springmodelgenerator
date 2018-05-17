@@ -24,12 +24,9 @@ uses
 
 type
    TViewMain = class(TForm)
-      pLeft: TPanel;
       pRight: TPanel;
       sbBot: TStatusBar;
-      vtTables: TVirtualStringTree;
       spl1: TSplitter;
-      SynMemo1: TMemo;
       pProperties: TPanel;
       edConString: TButtonedEdit;
       ilMain: TImageList;
@@ -41,7 +38,6 @@ type
       pmTree: TPopupMenu;
       alMain: TActionList;
       aShowPreview: TAction;
-      ShowPreview1: TMenuItem;
       aCheckAll: TAction;
       aUncheckAll: TAction;
       CheckAll1: TMenuItem;
@@ -49,8 +45,9 @@ type
       aGenerateUnits: TAction;
       edUnitPrefix: TEdit;
       cbUseNullableTypes: TCheckBox;
-      edVstSearch: TButtonedEdit;
       SearchTimer: TTimer;
+      vtTables: TVirtualStringTree;
+      edVstSearch: TButtonedEdit;
       procedure edConStringRightButtonClick(Sender: TObject);
       procedure FormCreate(Sender: TObject);
       procedure FormDestroy(Sender: TObject);
@@ -219,8 +216,13 @@ begin
    SetupRunner();
    for LNode in vtTables.CheckedNodes do
    begin
-      LGeneratedString := FRunner.Execute(LNode.Index);
+      LGeneratedString := FRunner.Execute(LNode.Index, True);
       SaveToFile(LNode.Index, LGeneratedString);
+      LGeneratedString := FRunner.Execute(LNode.Index, False);
+      SaveToFile(LNode.Index, LGeneratedString);
+      ShowPreview(LNode.Index);
+      ShellExecute(Application.Handle, PChar('open'), PChar('explorer.exe'),
+        PChar(edOutputDir.Text), nil, SW_NORMAL)
    end;
 end;
 
@@ -282,7 +284,7 @@ begin
    edConString.Text :=
      'DRIVER={Firebird/InterBase(r) driver};UID=SYSDBA;PWD=masterkey;DBNAME=LOCALHOST:EAGLEERP;';
    edOutputDir.Text := FRunner.DBLoader.OutputDir;
-   //edUnitPrefix.Text := FRunner.DBLoader.UnitPrefix;
+   // edUnitPrefix.Text := FRunner.DBLoader.UnitPrefix;
    edUnitPrefix.Text := 'Eagle.ERP.Modulo.Model.Entity.';
    cbUseNullableTypes.Checked := FRunner.DBLoader.UseNullableTypes;
 end;
@@ -301,6 +303,7 @@ procedure TViewMain.SaveToFile(AIndex: Integer; const AUnitText: string);
 var
    LFile: TStringStream;
    LFilename: string;
+   LTableName: string;
 begin
    if AUnitText = '' then
       Exit;
@@ -310,9 +313,11 @@ begin
 
    LFile := TStringStream.Create(AUnitText, TEncoding.UTF8);
    try
+      LTableName := FRunner.DBLoader.Entities[AIndex].TableName;
+      LTableName := UpperCase(Copy(LTableName, 1, 1)) +
+        LowerCase(Copy(LTableName, 2, MaxInt));
       LFilename := IncludeTrailingPathDelimiter(FRunner.DBLoader.OutputDir) +
-        FRunner.DBLoader.GetUnitName(FRunner.DBLoader.Entities[AIndex]
-        .TableName) + '.pas';
+        FRunner.DBLoader.GetUnitName(LTableName) + '.pas';
 
       LFile.SaveToFile(LFilename);
    finally
@@ -329,7 +334,7 @@ begin
       Exit;
 
    SetupRunner();
-   SynMemo1.Lines.Text := FRunner.Execute(LNode.Index);
+   ShowMessage(FRunner.Execute(LNode.Index, False));
 end;
 
 procedure TViewMain.ShowStatus(const AMessage: string);

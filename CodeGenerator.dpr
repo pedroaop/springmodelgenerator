@@ -3,7 +3,8 @@ program CodeGenerator;
 uses
   Forms,
   MainView in 'MainView.pas' {ViewMain},
-  MainRunner in 'MainRunner.pas';
+  MainRunner in 'MainRunner.pas',
+  ModelGenerator in 'ModelGenerator.pas';
 
 {$R *.res}
 

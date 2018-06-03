@@ -3,7 +3,7 @@ unit MainRunner;
 interface
 
 uses
-   Spring.Persistence.Mapping.CodeGenerator.DB;
+   Spring.Persistence.Mapping.CodeGenerator.DB, ModelGenerator;
 
 type
    TMainRunner = class
@@ -77,9 +77,9 @@ end;
 function TMainRunner.Execute(AIndex: Integer;
   AGenerateInterface: Boolean): string;
 var
-   LGenerator: TDelphiUnitCodeGenerator;
+   LGenerator: TModelGenerator;
 begin
-   LGenerator := TDelphiUnitCodeGenerator.Create;
+   LGenerator := TModelGenerator.Create;
    try
       LGenerator.UseNullableTypes := DBLoader.UseNullableTypes;
 
@@ -90,9 +90,9 @@ begin
       end
       else
       begin
-         DBLoader.UnitPrefix := DBLoader.UnitPrefix + 'impl.';
+         DBLoader.UnitPrefix := DBLoader.UnitPrefix + 'Impl.';
          LGenerator.UnitPrefix := DBLoader.UnitPrefix;
-         Result := LGenerator.Generate(FDBLoader.Entities[AIndex]);
+         Result := LGenerator.GenerateModel(FDBLoader.Entities[AIndex]);
       end;
 
    finally

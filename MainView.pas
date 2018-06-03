@@ -322,6 +322,7 @@ begin
       LFile.SaveToFile(LFilename);
    finally
       LFile.Free;
+      FRunner.DBLoader.UnitPrefix := edUnitPrefix.Text;
    end;
 end;
 

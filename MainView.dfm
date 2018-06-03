@@ -34,9 +34,6 @@ object ViewMain: TViewMain
     BevelOuter = bvNone
     ShowCaption = False
     TabOrder = 0
-    ExplicitLeft = 308
-    ExplicitWidth = 641
-    ExplicitHeight = 586
     object pProperties: TPanel
       Left = 0
       Top = 0
@@ -46,7 +43,6 @@ object ViewMain: TViewMain
       BevelOuter = bvNone
       ShowCaption = False
       TabOrder = 0
-      ExplicitWidth = 641
       DesignSize = (
         689
         145)
@@ -66,7 +62,6 @@ object ViewMain: TViewMain
         TabOrder = 0
         TextHint = 'Enter Connection String here...'
         OnRightButtonClick = edConStringRightButtonClick
-        ExplicitWidth = 624
       end
       object edDbName: TEdit
         Left = 6
@@ -86,7 +81,6 @@ object ViewMain: TViewMain
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 2
         TextHint = 'Default Schema Name'
-        ExplicitWidth = 399
       end
       object btnExec: TButton
         Left = 572
@@ -96,7 +90,6 @@ object ViewMain: TViewMain
         Action = aGenerateUnits
         Anchors = [akRight, akBottom]
         TabOrder = 3
-        ExplicitLeft = 524
       end
       object btnConnect: TButton
         Left = 6
@@ -127,7 +120,6 @@ object ViewMain: TViewMain
         TextHint = 'Output Directory, e.g. D:\Models'
         OnLeftButtonClick = edOutputDirLeftButtonClick
         OnRightButtonClick = edOutputDirRightButtonClick
-        ExplicitWidth = 624
       end
       object edUnitPrefix: TEdit
         Left = 6
@@ -143,7 +135,7 @@ object ViewMain: TViewMain
       object cbUseNullableTypes: TCheckBox
         Left = 231
         Top = 118
-        Width = 106
+        Width = 194
         Height = 21
         Caption = 'Use Nullable Type'
         TabOrder = 7
@@ -168,10 +160,6 @@ object ViewMain: TViewMain
       OnDblClick = vtTablesDblClick
       OnGetText = vtTablesGetText
       OnInitNode = vtTablesInitNode
-      ExplicitLeft = 32
-      ExplicitTop = 87
-      ExplicitWidth = 305
-      ExplicitHeight = 448
       Columns = <>
       WideDefaultText = ''
     end
@@ -188,9 +176,6 @@ object ViewMain: TViewMain
       TextHint = 'Filter...'
       OnChange = edVstSearchChange
       OnRightButtonClick = edVstSearchRightButtonClick
-      ExplicitLeft = 152
-      ExplicitTop = 442
-      ExplicitWidth = 305
     end
   end
   object sbBot: TStatusBar
@@ -200,15 +185,13 @@ object ViewMain: TViewMain
     Height = 19
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 578
-    ExplicitWidth = 949
   end
   object ilMain: TImageList
     ColorDepth = cd32Bit
     Left = 464
     Top = 264
     Bitmap = {
-      494C010107000900340010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C0101070009003C0010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

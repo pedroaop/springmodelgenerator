@@ -86,13 +86,13 @@ begin
       if AGenerateInterface then
       begin
          LGenerator.UnitPrefix := DBLoader.UnitPrefix;
-         Result := LGenerator.GenerateInterface(FDBLoader.Entities[AIndex]);
+         Result := LGenerator.GenerateEntityInterface(FDBLoader.Entities[AIndex]);
       end
       else
       begin
          DBLoader.UnitPrefix := DBLoader.UnitPrefix + 'Impl.';
          LGenerator.UnitPrefix := DBLoader.UnitPrefix;
-         Result := LGenerator.GenerateModel(FDBLoader.Entities[AIndex]);
+         Result := LGenerator.GenerateEntityImplementation(FDBLoader.Entities[AIndex]);
       end;
 
    finally

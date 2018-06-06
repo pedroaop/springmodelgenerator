@@ -37,7 +37,6 @@ type
       edOutputDir: TButtonedEdit;
       pmTree: TPopupMenu;
       alMain: TActionList;
-      aShowPreview: TAction;
       aCheckAll: TAction;
       aUncheckAll: TAction;
       CheckAll1: TMenuItem;
@@ -59,22 +58,20 @@ type
         Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
       procedure edOutputDirRightButtonClick(Sender: TObject);
       procedure aShowPreviewUpdate(Sender: TObject);
-      procedure aShowPreviewExecute(Sender: TObject);
       procedure aCheckAllExecute(Sender: TObject);
       procedure aUncheckAllExecute(Sender: TObject);
       procedure aGenerateUnitsUpdate(Sender: TObject);
       procedure aGenerateUnitsExecute(Sender: TObject);
       procedure edOutputDirLeftButtonClick(Sender: TObject);
       procedure edVstSearchRightButtonClick(Sender: TObject);
-      procedure vtTablesDblClick(Sender: TObject);
       procedure SearchTimerRun(Sender: TObject);
       procedure edVstSearchChange(Sender: TObject);
    private
       FRunner: TMainRunner;
+      FTableAlias: string;
       procedure SetupRunner;
       procedure LoadFromRunner;
       procedure SaveToFile(AIndex: Integer; const AUnitText: string);
-      procedure ShowPreview(AIndex: Integer);
       procedure ShowStatus(const AMessage: string);
 
       procedure DoCheckNodes(AChecked: Boolean);
@@ -155,11 +152,6 @@ begin
    TAction(Sender).Enabled := vtTables.CheckedCount > 0;
 end;
 
-procedure TViewMain.aShowPreviewExecute(Sender: TObject);
-begin
-   ShowPreview(vtTables.FocusedNode.Index);
-end;
-
 procedure TViewMain.aShowPreviewUpdate(Sender: TObject);
 begin
    TAction(Sender).Enabled := vtTables.FocusedNode <> nil;
@@ -216,11 +208,12 @@ begin
    SetupRunner();
    for LNode in vtTables.CheckedNodes do
    begin
-      LGeneratedString := FRunner.Execute(LNode.Index, True);
+      FTableAlias := FRunner.DBLoader.Entities[LNode.Index].TableName;
+      InputQuery('Nome da Entidade', 'Nome da Entidade', FTableAlias);
+      LGeneratedString := FRunner.Execute(LNode.Index, True, FTableAlias);
       SaveToFile(LNode.Index, LGeneratedString);
-      LGeneratedString := FRunner.Execute(LNode.Index, False);
+      LGeneratedString := FRunner.Execute(LNode.Index, False, FTableAlias);
       SaveToFile(LNode.Index, LGeneratedString);
-      ShowPreview(LNode.Index);
       ShellExecute(Application.Handle, PChar('open'), PChar('explorer.exe'),
         PChar(edOutputDir.Text), nil, SW_NORMAL)
    end;
@@ -282,10 +275,10 @@ begin
    edSchemaName.Text := FRunner.DBLoader.DefaultSchemaName;
    // edConString.Text := FRunner.DBLoader.ConnectionString;
    edConString.Text :=
-     'DRIVER={Firebird/InterBase(r) driver};UID=SYSDBA;PWD=masterkey;DBNAME=LOCALHOST:EAGLEERP;';
+     'DRIVER={Firebird/InterBase(r) driver};UID=SYSDBA;PWD=masterkey;DBNAME=LOCALHOST:EAGLEPDVDEV;';
    edOutputDir.Text := FRunner.DBLoader.OutputDir;
    // edUnitPrefix.Text := FRunner.DBLoader.UnitPrefix;
-   edUnitPrefix.Text := 'Eagle.ERP.Modulo.Model.Entity.';
+   edUnitPrefix.Text := 'Eagle.ERP.Vendas.Model.Entity.';
    cbUseNullableTypes.Checked := FRunner.DBLoader.UseNullableTypes;
 end;
 
@@ -303,7 +296,6 @@ procedure TViewMain.SaveToFile(AIndex: Integer; const AUnitText: string);
 var
    LFile: TStringStream;
    LFilename: string;
-   LTableName: string;
 begin
    if AUnitText = '' then
       Exit;
@@ -313,29 +305,14 @@ begin
 
    LFile := TStringStream.Create(AUnitText, TEncoding.UTF8);
    try
-      LTableName := FRunner.DBLoader.Entities[AIndex].TableName;
-      LTableName := UpperCase(Copy(LTableName, 1, 1)) +
-        LowerCase(Copy(LTableName, 2, MaxInt));
       LFilename := IncludeTrailingPathDelimiter(FRunner.DBLoader.OutputDir) +
-        FRunner.DBLoader.GetUnitName(LTableName) + '.pas';
+        FRunner.DBLoader.GetUnitName(FTableAlias) + '.pas';
 
       LFile.SaveToFile(LFilename);
    finally
       LFile.Free;
       FRunner.DBLoader.UnitPrefix := edUnitPrefix.Text;
    end;
-end;
-
-procedure TViewMain.ShowPreview(AIndex: Integer);
-var
-   LNode: PVirtualNode;
-begin
-   LNode := vtTables.FocusedNode;
-   if not Assigned(LNode) then
-      Exit;
-
-   SetupRunner();
-   ShowMessage(FRunner.Execute(LNode.Index, False));
 end;
 
 procedure TViewMain.ShowStatus(const AMessage: string);
@@ -375,17 +352,6 @@ begin
    finally
       vtTables.EndUpdate;
       Screen.Cursor := crDefault;
-   end;
-end;
-
-procedure TViewMain.vtTablesDblClick(Sender: TObject);
-var
-   LNode: PVirtualNode;
-begin
-   LNode := vtTables.FocusedNode;
-   if Assigned(LNode) then
-   begin
-      ShowPreview(LNode.Index);
    end;
 end;
 

@@ -157,7 +157,6 @@ object ViewMain: TViewMain
       TabOrder = 1
       TreeOptions.MiscOptions = [toCheckSupport, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning]
       TreeOptions.PaintOptions = [toHideFocusRect, toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection, toUseExplorerTheme, toHideTreeLinesIfThemed]
-      OnDblClick = vtTablesDblClick
       OnGetText = vtTablesGetText
       OnInitNode = vtTablesInitNode
       Columns = <>
@@ -191,7 +190,7 @@ object ViewMain: TViewMain
     Left = 464
     Top = 264
     Bitmap = {
-      494C0101070009003C0010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010107000900400010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -477,13 +476,6 @@ object ViewMain: TViewMain
     Images = ilMain
     Left = 392
     Top = 296
-    object aShowPreview: TAction
-      Caption = 'Show Preview'
-      Hint = 'Show Preview'
-      ImageIndex = 4
-      OnExecute = aShowPreviewExecute
-      OnUpdate = aShowPreviewUpdate
-    end
     object aCheckAll: TAction
       Caption = 'Check All'
       Hint = 'Check All'

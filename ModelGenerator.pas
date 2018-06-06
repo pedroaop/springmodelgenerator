@@ -31,10 +31,10 @@ type
         : TStringBuilder;
       function AddTypeAttribute(const attributeText: string)
         : TStringBuilder; override;
-      function GenerateEntityInterface(const entityData
-        : TEntityModelData): string;
-      function GenerateEntityImplementation(const entityData
-        : TEntityModelData): string;
+      function GenerateEntityInterface(const entityData : TEntityModelData;
+          ATableAlias: string): string;
+      function GenerateEntityImplementation(const entityData : TEntityModelData;
+          ATableAlias: string): string;
       function GetColumnCamelCase(const columnData: TColumnData): string;
       property TableName: string read FTableName write SetTableName;
       function GetUnitNameSpace(const entityData: TEntityModelData): string;
@@ -148,7 +148,7 @@ end;
 { TModelGenerator }
 
 function TModelGenerator.GenerateEntityInterface(const entityData
-  : TEntityModelData): string;
+  : TEntityModelData; ATableAlias: string): string;
 var
    columnData: TColumnData;
 begin
@@ -160,7 +160,7 @@ begin
    FUnitBuilder.AppendFormat('unit %s;', [GetUnitNameSpace(entityData)])
      .AppendLine.AppendLine;
 
-   FUnitBuilder.Append('interface');
+   FUnitBuilder.Append('interface').AppendLine.AppendLine;
 
    if UseNullableTypes then
       FUnitBuilder.Append('uses').AppendLine.Append(BlockIndent)
@@ -188,7 +188,7 @@ begin
 end;
 
 function TModelGenerator.GenerateEntityImplementation(const entityData
-  : TEntityModelData): string;
+  : TEntityModelData; ATableAlias: string): string;
 var
    columnData: TColumnData;
 begin
@@ -215,7 +215,7 @@ begin
    AddTypeAttribute(Format('[Table(%s)]', [QuotedStr(UpperCase(TableName))]));
 
    FUnitBuilder.AppendLine.Append(BlockIndent)
-     .AppendFormat('T%s = class (TObject, I%s)', [TableName, TableName]);
+     .AppendFormat('T%s = class (TInterfacedObject, I%s)', [TableName, TableName]);
 
    FUnitBuilder.AppendLine.Append(BlockIndent).Append('private');
    for columnData in entityData.Columns do
@@ -239,7 +239,7 @@ begin
       AddImplGettersAndSetters(columnData);
 
    FUnitBuilder.Append('initialization').AppendLine.Append(BlockIndent)
-     .AppendFormat('Gontainer.RegisterType<I%s, T%s>(%s);',
+     .AppendFormat('GlobalContainer.RegisterType<I%s, T%s>(%s);',
      [TableName, TableName, QuotedStr(TableName)]).AppendLine.AppendLine;
 
    FUnitBuilder.Append('end').Append('.');

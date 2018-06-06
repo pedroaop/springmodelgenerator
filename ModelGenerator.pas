@@ -13,7 +13,6 @@ type
    private
       FTableName: string;
       FUnitBuilder: TStringBuilder;
-      procedure SetTableName(const Value: string);
       function GetBlockIndent: string;
    public
       constructor Create; override;
@@ -29,14 +28,15 @@ type
         : TStringBuilder;
       function AddImplGettersAndSetters(const columnData: TColumnData)
         : TStringBuilder;
+      function AddImplGettersAndSettersViewModel(const columnData: TColumnData)
+        : TStringBuilder;
       function AddTypeAttribute(const attributeText: string)
         : TStringBuilder; override;
-      function GenerateEntityInterface(const entityData : TEntityModelData;
-          ATableAlias: string): string;
-      function GenerateEntityImplementation(const entityData : TEntityModelData;
-          ATableAlias: string): string;
+      function GenerateEntityInterface(const entityData: TEntityModelData;
+        ATableAlias: string): string;
+      function GenerateEntityImplementation(const entityData: TEntityModelData;
+        ATableAlias: string): string;
       function GetColumnCamelCase(const columnData: TColumnData): string;
-      property TableName: string read FTableName write SetTableName;
       function GetUnitNameSpace(const entityData: TEntityModelData): string;
       property BlockIndent: string read GetBlockIndent;
    end;
@@ -80,13 +80,31 @@ begin
    ColumnName := GetColumnCamelCase(columnData);
    ColumnType := GetColumnTypeName(columnData);
    Result := FUnitBuilder.AppendFormat('function T%s.Get%s: %s;',
-     [TableName, ColumnName, ColumnType]).AppendLine.Append('begin')
+     [FTableName, ColumnName, ColumnType]).AppendLine.Append('begin')
      .AppendLine.Append(BlockIndent).AppendFormat('Result := F%s', [ColumnName])
      .Append(';').AppendLine.Append('end;').AppendLine.AppendLine.AppendFormat
-     ('procedure T%s.Set%s(const Value: %s);', [TableName, ColumnName,
+     ('procedure T%s.Set%s(const Value: %s);', [FTableName, ColumnName,
      ColumnType]).AppendLine.Append('begin').AppendLine.Append(BlockIndent)
      .AppendFormat('F%s := Value;', [ColumnName]).AppendLine.Append('end;')
      .AppendLine.AppendLine;
+end;
+
+function TModelGenerator.AddImplGettersAndSettersViewModel(const columnData
+  : TColumnData): TStringBuilder;
+var
+   ColumnName: string;
+   ColumnType: string;
+begin
+   ColumnName := GetColumnCamelCase(columnData);
+   ColumnType := GetColumnTypeName(columnData);
+   Result := FUnitBuilder.AppendFormat('function TViewModel.Get%s: %s;',
+     [ColumnName, ColumnType]).Append('begin ')
+     .AppendFormat('if Assigned(%s) then Result := %s.%s;',
+     [FTableName, FTableName, ColumnName]).Append('end;')
+     .AppendFormat('procedure TViewModel.Set%s(const Value: %s);',
+     [ColumnName, ColumnType]).Append('begin ')
+     .AppendFormat('if Assigned(%s) then %s.%s := Value;',
+     [FTableName, FTableName, ColumnName]).Append('end;');
 end;
 
 function TModelGenerator.AddPrivateField(const columnData: TColumnData)
@@ -153,7 +171,7 @@ var
    columnData: TColumnData;
 begin
 
-   TableName := entityData.TableName;
+   FTableName := ATableAlias;
 
    FUnitBuilder.Clear;
 
@@ -167,7 +185,7 @@ begin
         .Append(UNIT_NULLABLES).Append(';');
 
    FUnitBuilder.AppendLine.AppendLine.Append('type')
-     .AppendLine.Append(BlockIndent).Append('I').Append(TableName)
+     .AppendLine.Append(BlockIndent).Append('I').Append(FTableName)
      .Append(' = interface');
 
    for columnData in entityData.Columns do
@@ -182,7 +200,12 @@ begin
 
    FUnitBuilder.AppendLine.AppendLine.Append('implementation').AppendLine;
 
-   FUnitBuilder.Append('end').Append('.');
+   FUnitBuilder.Append('{');
+   for columnData in entityData.Columns do
+      AddImplGettersAndSettersViewModel(columnData);
+   FUnitBuilder.Append('}');
+
+   FUnitBuilder.AppendLine.Append('end').Append('.');
 
    Result := FUnitBuilder.ToString;
 end;
@@ -193,7 +216,7 @@ var
    columnData: TColumnData;
 begin
 
-   TableName := entityData.TableName;
+   FTableName := ATableAlias;
 
    FUnitBuilder.Clear;
 
@@ -212,10 +235,12 @@ begin
    FUnitBuilder.Append('type');
 
    AddTypeAttribute('[Entity]');
-   AddTypeAttribute(Format('[Table(%s)]', [QuotedStr(UpperCase(TableName))]));
+   AddTypeAttribute(Format('[Table(%s)]',
+     [QuotedStr(UpperCase(entityData.TableName))]));
 
    FUnitBuilder.AppendLine.Append(BlockIndent)
-     .AppendFormat('T%s = class (TInterfacedObject, I%s)', [TableName, TableName]);
+     .AppendFormat('T%s = class (TInterfacedObject, I%s)',
+     [FTableName, FTableName]);
 
    FUnitBuilder.AppendLine.Append(BlockIndent).Append('private');
    for columnData in entityData.Columns do
@@ -233,16 +258,16 @@ begin
    FUnitBuilder.AppendLine.Append(BlockIndent).Append('end').Append(';');
 
    FUnitBuilder.AppendLine.AppendLine.Append('implementation')
-     .AppendLine.AppendLine.AppendFormat('{ T%s }', [TableName])
+     .AppendLine.AppendLine.AppendFormat('{ T%s }', [FTableName])
      .AppendLine.AppendLine;
    for columnData in entityData.Columns do
       AddImplGettersAndSetters(columnData);
 
    FUnitBuilder.Append('initialization').AppendLine.Append(BlockIndent)
      .AppendFormat('GlobalContainer.RegisterType<I%s, T%s>(%s);',
-     [TableName, TableName, QuotedStr(TableName)]).AppendLine.AppendLine;
+     [FTableName, FTableName, QuotedStr(FTableName)]).AppendLine.AppendLine;
 
-   FUnitBuilder.Append('end').Append('.');
+   FUnitBuilder.AppendLine.Append('end').Append('.');
 
    Result := FUnitBuilder.ToString;
 
@@ -261,7 +286,7 @@ var
    Splits: TArray<string>;
    Split: string;
 begin
-   Input := TRegEx.Replace(columnData.ColumnName, (TableName + '?'), EmptyStr,
+   Input := TRegEx.Replace(columnData.ColumnName, (FTableName + '?'), EmptyStr,
      [roIgnoreCase]);
    Pattern := '_';
    Result := EmptyStr;
@@ -278,13 +303,7 @@ end;
 function TModelGenerator.GetUnitNameSpace(const entityData
   : TEntityModelData): string;
 begin
-   Result := UnitPrefix + TableName;
-end;
-
-procedure TModelGenerator.SetTableName(const Value: string);
-begin
-   FTableName := UpperCase(Copy(Value, 1, 1)) +
-     LowerCase(Copy(Value, 2, Length(Value)));
+   Result := UnitPrefix + FTableName;
 end;
 
 end.

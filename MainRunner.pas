@@ -3,7 +3,7 @@ unit MainRunner;
 interface
 
 uses
-   Spring.Persistence.Mapping.CodeGenerator.DB, ModelGenerator;
+   Vcl.Dialogs, Spring.Persistence.Mapping.CodeGenerator.DB, ModelGenerator;
 
 type
    TMainRunner = class
@@ -14,7 +14,8 @@ type
       constructor Create(); virtual;
       destructor Destroy; override;
 
-      function Execute(AIndex: Integer; AGenerateInterface: Boolean): string;
+      function Execute(AIndex: Integer; AGenerateInterface: Boolean; ATableAlias:
+          string): string;
 
       property DBLoader: TEntityModelDataLoader read FDBLoader;
    end;
@@ -75,7 +76,7 @@ begin
 end;
 
 function TMainRunner.Execute(AIndex: Integer;
-  AGenerateInterface: Boolean): string;
+  AGenerateInterface: Boolean; ATableAlias: string): string;
 var
    LGenerator: TModelGenerator;
 begin
@@ -86,13 +87,13 @@ begin
       if AGenerateInterface then
       begin
          LGenerator.UnitPrefix := DBLoader.UnitPrefix;
-         Result := LGenerator.GenerateEntityInterface(FDBLoader.Entities[AIndex]);
+         Result := LGenerator.GenerateEntityInterface(FDBLoader.Entities[AIndex], ATableAlias);
       end
       else
       begin
          DBLoader.UnitPrefix := DBLoader.UnitPrefix + 'Impl.';
          LGenerator.UnitPrefix := DBLoader.UnitPrefix;
-         Result := LGenerator.GenerateEntityImplementation(FDBLoader.Entities[AIndex]);
+         Result := LGenerator.GenerateEntityImplementation(FDBLoader.Entities[AIndex], ATableAlias);
       end;
 
    finally

@@ -18,24 +18,17 @@ type
       constructor Create; override;
       destructor Destroy; override;
       function AddUnit(const unitName: string): TStringBuilder; override;
-      function AddClassAttribute(const attributeText: string)
-        : TStringBuilder; override;
-      function AddPrivateField(const columnData: TColumnData)
-        : TStringBuilder; override;
-      function AddPublicProperty(const columnData: TColumnData)
-        : TStringBuilder; override;
-      function AddGettersAndSetters(const columnData: TColumnData)
-        : TStringBuilder;
-      function AddImplGettersAndSetters(const columnData: TColumnData)
-        : TStringBuilder;
-      function AddImplGettersAndSettersViewModel(const columnData: TColumnData)
-        : TStringBuilder;
-      function AddTypeAttribute(const attributeText: string)
-        : TStringBuilder; override;
-      function GenerateEntityInterface(const entityData: TEntityModelData;
-        ATableAlias: string): string;
-      function GenerateEntityImplementation(const entityData: TEntityModelData;
-        ATableAlias: string): string;
+      function AddClassAttribute(const attributeText: string): TStringBuilder; override;
+      function AddPrivateField(const columnData: TColumnData): TStringBuilder; override;
+      function AddPublicProperty(const columnData: TColumnData): TStringBuilder; override;
+      function AddPublicReadWriteField(const columnData: TColumnData): TStringBuilder;
+      function AddGettersAndSetters(const columnData: TColumnData): TStringBuilder;
+      function AddImplGettersAndSetters(const columnData: TColumnData): TStringBuilder;
+      function AddImplGettersAndSettersViewModel(const columnData: TColumnData): TStringBuilder;
+      function AddTypeAttribute(const attributeText: string): TStringBuilder; override;
+      function GenerateEntityInterface(const entityData: TEntityModelData; ATableAlias: string): string;
+      function GenerateSimpleEntity(const entityData: TEntityModelData; ATableAlias: string): string;
+      function GenerateEntityImplementation(const entityData: TEntityModelData; ATableAlias: string): string;
       function GetColumnCamelCase(const columnData: TColumnData): string;
       function GetUnitNameSpace(const entityData: TEntityModelData): string;
       property BlockIndent: string read GetBlockIndent;
@@ -48,67 +41,47 @@ const
    UNIT_NULLABLES = 'Spring';
    UNIT_CONTAINER = 'Spring.container';
 
-function TModelGenerator.AddClassAttribute(const attributeText: string)
-  : TStringBuilder;
+function TModelGenerator.AddClassAttribute(const attributeText: string): TStringBuilder;
 begin
-   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent)
-     .Append(attributeText);
+   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent).Append(attributeText);
 end;
 
-function TModelGenerator.AddGettersAndSetters(const columnData: TColumnData)
-  : TStringBuilder;
+function TModelGenerator.AddGettersAndSetters(const columnData: TColumnData): TStringBuilder;
 var
    ColumnName: string;
    ColumnType: string;
 begin
    ColumnName := GetColumnCamelCase(columnData);
    ColumnType := GetColumnTypeName(columnData);
-   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent)
-     .AppendFormat('function Get%s: %s;', [ColumnName, ColumnType])
-     .AppendLine.Append(BlockIndent).Append(BlockIndent)
-     .AppendFormat('procedure Set%s(const Value: %s);',
-     [ColumnName, ColumnType]);
+   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent).AppendFormat('function Get%s: %s;', [ColumnName, ColumnType]).AppendLine.Append(BlockIndent).Append(BlockIndent)
+     .AppendFormat('procedure Set%s(const Value: %s);', [ColumnName, ColumnType]);
 
 end;
 
-function TModelGenerator.AddImplGettersAndSetters(const columnData: TColumnData)
-  : TStringBuilder;
+function TModelGenerator.AddImplGettersAndSetters(const columnData: TColumnData): TStringBuilder;
 var
    ColumnName: string;
    ColumnType: string;
 begin
    ColumnName := GetColumnCamelCase(columnData);
    ColumnType := GetColumnTypeName(columnData);
-   Result := FUnitBuilder.AppendFormat('function T%s.Get%s: %s;',
-     [FTableName, ColumnName, ColumnType]).AppendLine.Append('begin')
-     .AppendLine.Append(BlockIndent).AppendFormat('Result := F%s', [ColumnName])
-     .Append(';').AppendLine.Append('end;').AppendLine.AppendLine.AppendFormat
-     ('procedure T%s.Set%s(const Value: %s);', [FTableName, ColumnName,
-     ColumnType]).AppendLine.Append('begin').AppendLine.Append(BlockIndent)
-     .AppendFormat('F%s := Value;', [ColumnName]).AppendLine.Append('end;')
+   Result := FUnitBuilder.AppendFormat('function T%s.Get%s: %s;', [FTableName, ColumnName, ColumnType]).AppendLine.Append('begin').AppendLine.Append(BlockIndent).AppendFormat('Result := F%s', [ColumnName]).Append(';').AppendLine.Append('end;')
+     .AppendLine.AppendLine.AppendFormat('procedure T%s.Set%s(const Value: %s);', [FTableName, ColumnName, ColumnType]).AppendLine.Append('begin').AppendLine.Append(BlockIndent).AppendFormat('F%s := Value;', [ColumnName]).AppendLine.Append('end;')
      .AppendLine.AppendLine;
 end;
 
-function TModelGenerator.AddImplGettersAndSettersViewModel(const columnData
-  : TColumnData): TStringBuilder;
+function TModelGenerator.AddImplGettersAndSettersViewModel(const columnData: TColumnData): TStringBuilder;
 var
    ColumnName: string;
    ColumnType: string;
 begin
    ColumnName := GetColumnCamelCase(columnData);
    ColumnType := GetColumnTypeName(columnData);
-   Result := FUnitBuilder.AppendFormat('function TViewModel.Get%s: %s;',
-     [ColumnName, ColumnType]).Append('begin ')
-     .AppendFormat('if Assigned(%s) then Result := %s.%s;',
-     [FTableName, FTableName, ColumnName]).Append('end;')
-     .AppendFormat('procedure TViewModel.Set%s(const Value: %s);',
-     [ColumnName, ColumnType]).Append('begin ')
-     .AppendFormat('if Assigned(%s) then %s.%s := Value;',
-     [FTableName, FTableName, ColumnName]).Append('end;');
+   Result := FUnitBuilder.AppendFormat('function TViewModel.Get%s: %s;', [ColumnName, ColumnType]).Append('begin ').AppendFormat('if Assigned(%s) then Result := %s.%s;', [FTableName, FTableName, ColumnName]).Append('end;')
+     .AppendFormat('procedure TViewModel.Set%s(const Value: %s);', [ColumnName, ColumnType]).Append('begin ').AppendFormat('if Assigned(%s) then %s.%s := Value;', [FTableName, FTableName, ColumnName]).Append('end;');
 end;
 
-function TModelGenerator.AddPrivateField(const columnData: TColumnData)
-  : TStringBuilder;
+function TModelGenerator.AddPrivateField(const columnData: TColumnData): TStringBuilder;
 var
    ColumnName: string;
    ColumnType: string;
@@ -122,33 +95,38 @@ begin
 
    AddClassAttribute(GetColumnAttributeText(columnData));
 
-   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent)
-     .AppendFormat('F%s: %s;', [ColumnName, ColumnType]).AppendLine;
+   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent).AppendFormat('F%s: %s;', [ColumnName, ColumnType]).AppendLine;
 end;
 
-function TModelGenerator.AddPublicProperty(const columnData: TColumnData)
-  : TStringBuilder;
+function TModelGenerator.AddPublicProperty(const columnData: TColumnData): TStringBuilder;
 var
    ColumnName: string;
    ColumnType: string;
 begin
    ColumnName := GetColumnCamelCase(columnData);
    ColumnType := GetColumnTypeName(columnData);
-   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent)
-     .AppendFormat('property %s: %s read Get%s write Set%s;',
-     [ColumnName, ColumnType, ColumnName, ColumnName]);
+   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent).AppendFormat('property %s: %s read Get%s write Set%s;', [ColumnName, ColumnType, ColumnName, ColumnName]);
 end;
 
-function TModelGenerator.AddTypeAttribute(const attributeText: string)
-  : TStringBuilder;
+function TModelGenerator.AddPublicReadWriteField(
+  const columnData: TColumnData): TStringBuilder;
+var
+   ColumnName: string;
+   ColumnType: string;
+begin
+   ColumnName := GetColumnCamelCase(columnData);
+   ColumnType := GetColumnTypeName(columnData);
+   Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(BlockIndent).AppendFormat('property %s: %s read F%s write F%s;', [ColumnName, ColumnType, ColumnName, ColumnName]);
+end;
+
+function TModelGenerator.AddTypeAttribute(const attributeText: string): TStringBuilder;
 begin
    Result := FUnitBuilder.AppendLine.Append(BlockIndent).Append(attributeText);
 end;
 
 function TModelGenerator.AddUnit(const unitName: string): TStringBuilder;
 begin
-   Result := FUnitBuilder.Append(',').AppendLine.Append(BlockIndent)
-     .Append(unitName);
+   Result := FUnitBuilder.Append(',').AppendLine.Append(BlockIndent).Append(unitName);
 end;
 
 constructor TModelGenerator.Create;
@@ -165,8 +143,7 @@ end;
 
 { TModelGenerator }
 
-function TModelGenerator.GenerateEntityInterface(const entityData
-  : TEntityModelData; ATableAlias: string): string;
+function TModelGenerator.GenerateEntityInterface(const entityData: TEntityModelData; ATableAlias: string): string;
 var
    columnData: TColumnData;
 begin
@@ -175,18 +152,14 @@ begin
 
    FUnitBuilder.Clear;
 
-   FUnitBuilder.AppendFormat('unit %s;', [GetUnitNameSpace(entityData)])
-     .AppendLine.AppendLine;
+   FUnitBuilder.AppendFormat('unit %s;', [GetUnitNameSpace(entityData)]).AppendLine.AppendLine;
 
    FUnitBuilder.Append('interface').AppendLine.AppendLine;
 
    if UseNullableTypes then
-      FUnitBuilder.Append('uses').AppendLine.Append(BlockIndent)
-        .Append(UNIT_NULLABLES).Append(';');
+      FUnitBuilder.Append('uses').AppendLine.Append(BlockIndent).Append(UNIT_NULLABLES).Append(';');
 
-   FUnitBuilder.AppendLine.AppendLine.Append('type')
-     .AppendLine.Append(BlockIndent).Append('I').Append(FTableName)
-     .Append(' = interface');
+   FUnitBuilder.AppendLine.AppendLine.Append('type').AppendLine.Append(BlockIndent).Append('I').Append(FTableName).Append(' = interface');
 
    for columnData in entityData.Columns do
       AddGettersAndSetters(columnData);
@@ -200,18 +173,24 @@ begin
 
    FUnitBuilder.AppendLine.AppendLine.Append('implementation').AppendLine;
 
-   FUnitBuilder.Append('{');
-   for columnData in entityData.Columns do
-      AddImplGettersAndSettersViewModel(columnData);
-   FUnitBuilder.Append('}');
+   if not UseNullableTypes then
+   begin
+      FUnitBuilder.Append('{');
+      for columnData in entityData.Columns do
+         AddPublicProperty(columnData);
+      FUnitBuilder.AppendLine;
+      for columnData in entityData.Columns do
+         AddImplGettersAndSettersViewModel(columnData);
+      FUnitBuilder.Append('}');
+   end;
 
    FUnitBuilder.AppendLine.Append('end').Append('.');
 
    Result := FUnitBuilder.ToString;
 end;
 
-function TModelGenerator.GenerateEntityImplementation(const entityData
-  : TEntityModelData; ATableAlias: string): string;
+function TModelGenerator.GenerateSimpleEntity(
+  const entityData: TEntityModelData; ATableAlias: string): string;
 var
    columnData: TColumnData;
 begin
@@ -220,13 +199,11 @@ begin
 
    FUnitBuilder.Clear;
 
-   FUnitBuilder.AppendFormat('unit %s;', [GetUnitNameSpace(entityData)])
-     .AppendLine.AppendLine;
+   FUnitBuilder.AppendFormat('unit %s;', [GetUnitNameSpace(entityData)]).AppendLine.AppendLine;
 
    FUnitBuilder.Append('interface').AppendLine.AppendLine;
 
-   FUnitBuilder.Append('uses').AppendLine.Append(BlockIndent)
-     .Append(UNIT_CONTAINER);
+   FUnitBuilder.Append('uses').AppendLine.Append(BlockIndent).Append(UNIT_CONTAINER);
    AddUnit(UNIT_ATTRIBUTES);
    if UseNullableTypes then
       AddUnit(UNIT_NULLABLES);
@@ -235,12 +212,58 @@ begin
    FUnitBuilder.Append('type');
 
    AddTypeAttribute('[Entity]');
-   AddTypeAttribute(Format('[Table(%s)]',
-     [QuotedStr(UpperCase(entityData.TableName))]));
+   AddTypeAttribute(Format('[Table(%s)]', [QuotedStr(UpperCase(entityData.TableName))]));
 
-   FUnitBuilder.AppendLine.Append(BlockIndent)
-     .AppendFormat('T%s = class (TInterfacedObject, I%s)',
-     [FTableName, FTableName]);
+   FUnitBuilder.AppendLine.Append(BlockIndent).AppendFormat('T%s = class (TInterfacedObject, I%s)', [FTableName, FTableName]);
+
+   FUnitBuilder.AppendLine.Append(BlockIndent).Append('private');
+   for columnData in entityData.Columns do
+      AddPrivateField(columnData);
+
+   FUnitBuilder.AppendLine.Append(BlockIndent).Append('public');
+
+   FUnitBuilder.AppendLine;
+
+   for columnData in entityData.Columns do
+      AddPublicReadWriteField(columnData);
+
+   FUnitBuilder.AppendLine.Append(BlockIndent).Append('end').Append(';');
+
+   FUnitBuilder.AppendLine.AppendLine.Append('implementation').AppendLine.AppendLine.AppendFormat('{ T%s }', [FTableName]).AppendLine.AppendLine;
+
+   FUnitBuilder.Append('initialization').AppendLine.Append(BlockIndent).AppendFormat('GlobalContainer.RegisterType<T%s>;', [FTableName]).AppendLine.AppendLine;
+
+   FUnitBuilder.AppendLine.Append('end').Append('.');
+
+   Result := FUnitBuilder.ToString;
+end;
+
+function TModelGenerator.GenerateEntityImplementation(const entityData: TEntityModelData; ATableAlias: string): string;
+var
+   columnData: TColumnData;
+begin
+
+   FTableName := ATableAlias;
+
+   FUnitBuilder.Clear;
+
+   FUnitBuilder.AppendFormat('unit %s;', [GetUnitNameSpace(entityData)]).AppendLine.AppendLine;
+
+   FUnitBuilder.Append('interface').AppendLine.AppendLine;
+
+   FUnitBuilder.Append('uses').AppendLine.Append(BlockIndent).Append(UNIT_CONTAINER);
+   AddUnit(UNIT_ATTRIBUTES);
+   if UseNullableTypes then
+      AddUnit(UNIT_NULLABLES);
+   AddUnit(GetUnitName(entityData));
+   FUnitBuilder.Append(';').AppendLine.AppendLine;
+
+   FUnitBuilder.Append('type');
+
+   AddTypeAttribute('[Entity]');
+   AddTypeAttribute(Format('[Table(%s)]', [QuotedStr(UpperCase(entityData.TableName))]));
+
+   FUnitBuilder.AppendLine.Append(BlockIndent).AppendFormat('T%s = class (TInterfacedObject, I%s)', [FTableName, FTableName]);
 
    FUnitBuilder.AppendLine.Append(BlockIndent).Append('private');
    for columnData in entityData.Columns do
@@ -257,15 +280,11 @@ begin
 
    FUnitBuilder.AppendLine.Append(BlockIndent).Append('end').Append(';');
 
-   FUnitBuilder.AppendLine.AppendLine.Append('implementation')
-     .AppendLine.AppendLine.AppendFormat('{ T%s }', [FTableName])
-     .AppendLine.AppendLine;
+   FUnitBuilder.AppendLine.AppendLine.Append('implementation').AppendLine.AppendLine.AppendFormat('{ T%s }', [FTableName]).AppendLine.AppendLine;
    for columnData in entityData.Columns do
       AddImplGettersAndSetters(columnData);
 
-   FUnitBuilder.Append('initialization').AppendLine.Append(BlockIndent)
-     .AppendFormat('GlobalContainer.RegisterType<I%s, T%s>(%s);',
-     [FTableName, FTableName, QuotedStr(FTableName)]).AppendLine.AppendLine;
+   FUnitBuilder.Append('initialization').AppendLine.Append(BlockIndent).AppendFormat('GlobalContainer.RegisterType<T%s>.Implements<I%s>;', [FTableName, FTableName]).AppendLine.AppendLine;
 
    FUnitBuilder.AppendLine.Append('end').Append('.');
 
@@ -278,30 +297,26 @@ begin
    Result := '   ';
 end;
 
-function TModelGenerator.GetColumnCamelCase(const columnData
-  : TColumnData): string;
+function TModelGenerator.GetColumnCamelCase(const columnData: TColumnData): string;
 var
    Input: string;
    Pattern: string;
    Splits: TArray<string>;
    Split: string;
 begin
-   Input := TRegEx.Replace(columnData.ColumnName, (FTableName + '?'), EmptyStr,
-     [roIgnoreCase]);
+   Input := TRegEx.Replace(columnData.ColumnName, (FTableName + '?'), EmptyStr, [roIgnoreCase]);
    Pattern := '_';
    Result := EmptyStr;
    Splits := TRegEx.Split(Input, Pattern);
    for Split in Splits do
    begin
 
-      Result := Result + UpperCase(Copy(Split, 1, 1)) +
-        LowerCase(Copy(Split, 2, Length(Split)))
+      Result := Result + UpperCase(Copy(Split, 1, 1)) + LowerCase(Copy(Split, 2, Length(Split)))
    end;
 
 end;
 
-function TModelGenerator.GetUnitNameSpace(const entityData
-  : TEntityModelData): string;
+function TModelGenerator.GetUnitNameSpace(const entityData: TEntityModelData): string;
 begin
    Result := UnitPrefix + FTableName;
 end;

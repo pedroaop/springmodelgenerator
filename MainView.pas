@@ -51,11 +51,8 @@ type
       procedure FormCreate(Sender: TObject);
       procedure FormDestroy(Sender: TObject);
       procedure btnConnectClick(Sender: TObject);
-      procedure vtTablesInitNode(Sender: TBaseVirtualTree;
-        ParentNode, Node: PVirtualNode;
-        var InitialStates: TVirtualNodeInitStates);
-      procedure vtTablesGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-        Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+      procedure vtTablesInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
+      procedure vtTablesGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
       procedure edOutputDirRightButtonClick(Sender: TObject);
       procedure aShowPreviewUpdate(Sender: TObject);
       procedure aCheckAllExecute(Sender: TObject);
@@ -114,8 +111,7 @@ begin
          end
    end
    else
-      FileCtrl.SelectDirectory('Select Directory', ExtractFileDrive(Directory),
-        Directory, [sdNewUI, sdNewFolder]);
+      FileCtrl.SelectDirectory('Select Directory', ExtractFileDrive(Directory), Directory, [sdNewUI, sdNewFolder]);
 
    Result := Directory <> '';
 end;
@@ -210,19 +206,17 @@ begin
    begin
       FTableAlias := FRunner.DBLoader.Entities[LNode.Index].TableName;
       InputQuery('Nome da Entidade', 'Nome da Entidade', FTableAlias);
-      LGeneratedString := FRunner.Execute(LNode.Index, True, FTableAlias);
+      //LGeneratedString := FRunner.GenerateModelEntity(LNode.Index, FTableAlias);
+      //SaveToFile(LNode.Index, LGeneratedString);
+      LGeneratedString := FRunner.GenerateViewModelEntity(LNode.Index, FTableAlias);
       SaveToFile(LNode.Index, LGeneratedString);
-      LGeneratedString := FRunner.Execute(LNode.Index, False, FTableAlias);
-      SaveToFile(LNode.Index, LGeneratedString);
-      ShellExecute(Application.Handle, PChar('open'), PChar('explorer.exe'),
-        PChar(edOutputDir.Text), nil, SW_NORMAL)
+      ShellExecute(Application.Handle, PChar('open'), PChar('explorer.exe'), PChar(edOutputDir.Text), nil, SW_NORMAL)
    end;
 end;
 
 procedure TViewMain.edConStringRightButtonClick(Sender: TObject);
 begin
-   TButtonedEdit(Sender).Text := PromptDataSource(Self.Handle,
-     TButtonedEdit(Sender).Text);
+   TButtonedEdit(Sender).Text := PromptDataSource(Self.Handle, TButtonedEdit(Sender).Text);
 end;
 
 procedure TViewMain.edOutputDirLeftButtonClick(Sender: TObject);
@@ -274,11 +268,10 @@ begin
    edDbName.Text := FRunner.DBLoader.DatabaseName;
    edSchemaName.Text := FRunner.DBLoader.DefaultSchemaName;
    // edConString.Text := FRunner.DBLoader.ConnectionString;
-   edConString.Text :=
-     'DRIVER={Firebird/InterBase(r) driver};UID=SYSDBA;PWD=masterkey;DBNAME=LOCALHOST:EAGLEPDVDEV;';
+   edConString.Text := 'DRIVER={Firebird/InterBase(r) driver};UID=SYSDBA;PWD=masterkey;DBNAME=LOCALHOST:EAGLENFCEDEV;';
    edOutputDir.Text := FRunner.DBLoader.OutputDir;
    // edUnitPrefix.Text := FRunner.DBLoader.UnitPrefix;
-   edUnitPrefix.Text := 'Eagle.ERP.Vendas.Model.Entity.';
+   edUnitPrefix.Text := 'Eagle.ERP.Vendas';
    cbUseNullableTypes.Checked := FRunner.DBLoader.UseNullableTypes;
 end;
 
@@ -305,8 +298,7 @@ begin
 
    LFile := TStringStream.Create(AUnitText, TEncoding.UTF8);
    try
-      LFilename := IncludeTrailingPathDelimiter(FRunner.DBLoader.OutputDir) +
-        FRunner.DBLoader.GetUnitName(FTableAlias) + '.pas';
+      LFilename := IncludeTrailingPathDelimiter(FRunner.DBLoader.OutputDir) + FRunner.DBLoader.UnitPrefix + '.pas';
 
       LFile.SaveToFile(LFilename);
    finally
@@ -355,15 +347,12 @@ begin
    end;
 end;
 
-procedure TViewMain.vtTablesGetText(Sender: TBaseVirtualTree;
-Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-var CellText: string);
+procedure TViewMain.vtTablesGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
 begin
    CellText := FRunner.DBLoader.Entities[Node.Index].ToString;
 end;
 
-procedure TViewMain.vtTablesInitNode(Sender: TBaseVirtualTree;
-ParentNode, Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
+procedure TViewMain.vtTablesInitNode(Sender: TBaseVirtualTree; ParentNode, Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
 begin
    Node.CheckType := ctCheckBox;
 end;

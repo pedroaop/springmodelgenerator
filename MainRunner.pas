@@ -3,7 +3,9 @@ unit MainRunner;
 interface
 
 uses
-   Vcl.Dialogs, Spring.Persistence.Mapping.CodeGenerator.DB, ModelGenerator;
+   Vcl.Dialogs,
+   Spring.Persistence.Mapping.CodeGenerator.DB,
+   ModelGenerator;
 
 type
    TMainRunner = class
@@ -14,8 +16,8 @@ type
       constructor Create(); virtual;
       destructor Destroy; override;
 
-      function Execute(AIndex: Integer; AGenerateInterface: Boolean; ATableAlias:
-          string): string;
+      function GenerateModelEntity(AIndex: Integer; ATableAlias: string): string;
+      function GenerateViewModelEntity(AIndex: Integer; ATableAlias: string): string;
 
       property DBLoader: TEntityModelDataLoader read FDBLoader;
    end;
@@ -34,8 +36,7 @@ var
    json: TJsonObject;
 begin
    inherited Create;
-   FFilename := IncludeTrailingPathDelimiter(GetHomePath) +
-     IncludeTrailingPathDelimiter('Marshmallow') + 'runner.json';
+   FFilename := IncludeTrailingPathDelimiter(GetHomePath) + IncludeTrailingPathDelimiter('Marshmallow') + 'runner.json';
    ForceDirectories(ExtractFileDir(FFilename));
    FDBLoader := TEntityModelDataLoader.Create;
 
@@ -75,29 +76,52 @@ begin
    inherited Destroy;
 end;
 
-function TMainRunner.Execute(AIndex: Integer;
-  AGenerateInterface: Boolean; ATableAlias: string): string;
+function TMainRunner.GenerateModelEntity(AIndex: Integer; ATableAlias: string): string;
 var
    LGenerator: TModelGenerator;
 begin
+
    LGenerator := TModelGenerator.Create;
+
    try
+
       LGenerator.UseNullableTypes := DBLoader.UseNullableTypes;
 
-      if AGenerateInterface then
-      begin
-         LGenerator.UnitPrefix := DBLoader.UnitPrefix;
-         Result := LGenerator.GenerateEntityInterface(FDBLoader.Entities[AIndex], ATableAlias);
-      end
-      else
-      begin
-         DBLoader.UnitPrefix := DBLoader.UnitPrefix + 'Impl.';
-         LGenerator.UnitPrefix := DBLoader.UnitPrefix;
-         Result := LGenerator.GenerateEntityImplementation(FDBLoader.Entities[AIndex], ATableAlias);
-      end;
+      LGenerator.UnitPrefix := DBLoader.UnitPrefix;
+
+      Result := LGenerator.GenerateModelEntity(FDBLoader.Entities[AIndex], ATableAlias);
+
+      DBLoader.UnitPrefix := LGenerator.UnitPrefix;
 
    finally
+
       LGenerator.Free;
+
+   end;
+
+end;
+
+function TMainRunner.GenerateViewModelEntity(AIndex: Integer; ATableAlias: string): string;
+var
+   LGenerator: TModelGenerator;
+begin
+
+   LGenerator := TModelGenerator.Create;
+
+   try
+
+      LGenerator.UseNullableTypes := DBLoader.UseNullableTypes;
+
+      LGenerator.UnitPrefix := DBLoader.UnitPrefix;
+
+      Result := LGenerator.GenerateViewModelEntity(FDBLoader.Entities[AIndex], ATableAlias);
+
+      DBLoader.UnitPrefix := LGenerator.UnitPrefix;
+
+   finally
+
+      LGenerator.Free;
+
    end;
 end;
 
